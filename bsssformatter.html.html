@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSSD - Sergeant Mentor Toolset</title>
+    <style>
+        :root {
+            --bg: #f4f4f4;
+            --card-bg: #ffffff;
+            --text: #1a1a1a;
+            --lssd-gold: #c5a059;
+            --lssd-green: #2d5a27;
+            --border: #dddddd;
+            --sticky-top: 20px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --border: #333333;
+            --lssd-green: #3d7a35;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; line-height: 1.4; }
+        .container { max-width: 1400px; margin: auto; }
+        
+        header { text-align: center; border-bottom: 3px solid var(--lssd-gold); margin-bottom: 10px; padding-bottom: 10px; position: relative; }
+        .warning { color: #ff4d4d; font-weight: bold; text-align: center; margin-bottom: 20px; text-transform: uppercase; font-size: 0.85em; }
+
+        .theme-switch { position: absolute; right: 0; top: 10px; cursor: pointer; background: var(--lssd-green); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.8em; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); overflow-x: auto; }
+        .tab-btn { padding: 12px 20px; border: none; background: #ddd; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; transition: 0.2s; color: #444; white-space: nowrap; }
+        .tab-btn.active { background: var(--lssd-green); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .grid { display: grid; grid-template-columns: 1fr 420px; gap: 30px; align-items: start; }
+        .card { border: 1px solid var(--border); padding: 20px; border-radius: 8px; background: var(--card-bg); margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; color: var(--lssd-gold); border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.1em; }
+        
+        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .input-group label { font-size: 0.8em; font-weight: bold; margin-bottom: 5px; color: var(--lssd-gold); }
+        input, select, textarea { padding: 10px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; }
+
+        .topic-row { display: grid; grid-template-columns: 2.5fr 80px 80px 50px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .topic-header { font-weight: bold; font-size: 0.75em; text-transform: uppercase; opacity: 0.7; }
+        .topic-label { font-size: 0.9em; font-weight: 500; }
+        .mandatory { color: #ff4d4d; font-weight: bold; margin-left: 4px; }
+
+        .sidebar-sticky { position: sticky; top: var(--sticky-top); display: flex; flex-direction: column; gap: 20px; }
+        .score-box { background: var(--lssd-green); color: white; padding: 25px; border-radius: 8px; text-align: center; }
+        .score-val { font-size: 3.5em; font-weight: bold; color: white; line-height: 1; }
+        
+        textarea.comment-box { width: 100%; min-height: 80px; resize: vertical; margin-top: 10px; font-family: sans-serif; box-sizing: border-box; }
+        .output-box { width: 100%; height: 400px; font-family: monospace; font-size: 11px; white-space: pre; overflow-x: auto; margin-top: 10px; background: #222; color: #0f0; border: 1px solid #444;}
+        
+        .btn { background: var(--lssd-gold); color: black; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        .btn-copy { background: #444; color: white; margin-top: 10px; }
+        [type="checkbox"] { transform: scale(1.3); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <button class="theme-switch" onclick="toggleTheme()">Toggle Dark Mode</button>
+        <img src="https://i.imgur.com/LEWTXbL.png" width="80">
+        <h1 style="margin:5px 0;">BSSS SUPERVISORY TOOLSET</h1>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'obs')">Student Observation Report</button>
+        <button class="tab-btn" onclick="openTab(event, 'edu')">Educational Patrol</button>
+        <button class="tab-btn" onclick="openTab(event, 'eval')">Evaluation Patrol</button>
+        <button class="tab-btn" onclick="openTab(event, 'final')">Final Evaluation Format</button>
+    </div>
+
+    <!-- TAB: STUDENT OBSERVATION REPORT -->
+    <div id="obs" class="tab-content active">
+        <div class="grid">
+            <div class="main-content">
+                <div class="card">
+                    <h3>Personnel & Grade</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="input-group"><label>Student Name</label><input type="text" id="obs_student"></div>
+                        <div class="input-group"><label>Mentor Name</label><input type="text" id="obs_mentor"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="input-group"><label>Patrol Date</label><input type="date" id="obs_date"></div>
+                        <div class="input-group"><label>Performance Grade</label>
+                            <select id="obs_grade">
+                                <option value="POSITIVE">POSITIVE</option>
+                                <option value="NEGATIVE">NEGATIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Narrative</h3>
+                    <textarea id="obs_narrative" class="comment-box" style="height: 300px;" placeholder="Describe the observations here..."></textarea>
+                </div>
+            </div>
+            <div class="sidebar-sticky">
+                <div class="card">
+                    <h3>Observation BBCode</h3>
+                    <button class="btn" onclick="generateObsBBCode()">Generate BBCode</button>
+                    <textarea id="obs_output" class="output-box" readonly placeholder="Output appears here..."></textarea>
+                    <button class="btn btn-copy" onclick="copyText('obs_output')">Copy BBCode</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: EDUCATIONAL PATROL -->
+    <div id="edu" class="tab-content">
+        <div class="grid">
+            <div class="main-content">
+                <div class="card">
+                    <h3>Personnel Information</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="input-group"><label>Student Name</label><input type="text" id="edu_student_name"></div>
+                        <div class="input-group"><label>Mentor Name</label><input type="text" id="edu_mentor_name"></div>
+                    </div>
+                    <div class="input-group"><label>Patrol Date</label><input type="date" id="edu_patrol_date"></div>
+                </div>
+                <div class="card"><h3>A. Delivered Practical and/or Theoretical Knowledge</h3><textarea id="edu_narrative_a" class="comment-box" style="height: 150px;"></textarea></div>
+                <div class="card"><h3>B. Most Satisfactory Performance</h3><textarea id="edu_narrative_b" class="comment-box" style="height: 150px;"></textarea></div>
+                <div class="card"><h3>C. Least Satisfactory Performance</h3><textarea id="edu_narrative_c" class="comment-box" style="height: 150px;"></textarea></div>
+            </div>
+            <div class="sidebar-sticky">
+                <div class="card">
+                    <h3>Educational BBCode</h3>
+                    <button class="btn" onclick="generateEduBBCode()">Generate Edu BBCode</button>
+                    <textarea id="edu_bbcode_output" class="output-box" readonly></textarea>
+                    <button class="btn btn-copy" onclick="copyText('edu_bbcode_output')">Copy BBCode</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: EVALUATION PATROL -->
+    <div id="eval" class="tab-content">
+        <div class="warning">⚠ Red asterisk (*) indicates mandatory task completion. ⚠</div>
+        <div class="grid">
+            <div class="main-content">
+                <div class="card">
+                    <h3>Personnel Information</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="input-group"><label>Student Name</label><input type="text" id="ev_student_name" oninput="calculateEval()"></div>
+                        <div class="input-group"><label>Mentor Name</label><input type="text" id="ev_mentor_name" oninput="calculateEval()"></div>
+                    </div>
+                    <div class="input-group"><label>Patrol Date</label><input type="date" id="ev_patrol_date" onchange="calculateEval()"></div>
+                </div>
+                <div id="eval-categories-anchor"></div>
+                <div class="card"><h3>Report & Narrative</h3><textarea id="ev_narrative" style="width:100%; height: 200px;"></textarea></div>
+            </div>
+            <div class="sidebar-sticky">
+                <div class="score-box">
+                    <div style="font-size: 0.8em; margin-bottom: 5px;">CURRENT PERFORMANCE</div>
+                    <div class="score-val" id="ev_final_score">0%</div>
+                    <div id="ev_pass_status" style="font-weight: bold; margin-top: 10px; font-size: 1.1em;">NEEDS EVALUATION</div>
+                </div>
+                <div class="card"><h3>Evaluation BBCode</h3><button class="btn" onclick="generateEvalBBCode()">Generate Eval BBCode</button><textarea id="ev_bbcode_output" class="output-box" readonly></textarea><button class="btn btn-copy" onclick="copyText('ev_bbcode_output')">Copy BBCode</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: FINAL EVALUATION -->
+    <div id="final" class="tab-content">
+        <div class="warning">⚠ Check off N/O for unobserved topics to shift grading weight. ⚠</div>
+        <div class="grid">
+            <div class="main-content">
+                <div class="card">
+                    <h3>Personnel & Session</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="input-group"><label>Student Name</label><input type="text" id="student_name" oninput="calculateFinal()"></div>
+                        <div class="input-group"><label>Mentor Name</label><input type="text" id="mentor_name" oninput="calculateFinal()"></div>
+                    </div>
+                    <div class="input-group"><label>Patrol Date</label><input type="date" id="patrol_date" onchange="calculateFinal()"></div>
+                </div>
+                <div id="final-categories-anchor"></div>
+                <div class="card" style="border: 2px solid var(--lssd-green);"><h3>OOC Modifier <span>+5% Bonus</span></h3><div id="ooc-rows"></div><div class="input-group" style="margin-top:15px;"><label>OOC Comments</label><textarea id="ooc_comment" class="comment-box"></textarea></div></div>
+                <div class="card"><h3>Overall Narrative</h3><textarea id="narrative" style="width:100%; height: 200px;"></textarea></div>
+            </div>
+            <div class="sidebar-sticky">
+                <div class="score-box"><div style="font-size: 0.8em; margin-bottom: 5px;">FINAL PERFORMANCE SCORE</div><div class="score-val" id="final_score">0%</div><div id="pass_status" style="font-weight: bold; margin-top: 10px; font-size: 1.1em;">NEEDS EVALUATION</div></div>
+                <div class="card" style="margin-bottom: 0;"><h3>BBCode Output</h3><button class="btn" onclick="generateFinalBBCode()">Generate Final BBCode</button><textarea id="bbcode_output" class="output-box" readonly></textarea><button class="btn btn-copy" onclick="copyText('bbcode_output')">Copy BBCode</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- EVALUATION DATA ---
+    const evalSchema = [
+        { name: "Basics", weight: 0.15, topics: [{n: "Supervisor Presence", m: 3, r:true}, {n: "Resource Management", m: 3, r:true}, {n: "Incident Management", m: 3, r:true}, {n: "Supervisor Requests", m: 2, r:true}, {n: "Assigning Units", m: 2, r:true}, {n: "Briefs and Debriefs", m: 1, r:true}, {n: "Understanding of the handle", m: 3, r:false}] },
+        { name: "Radio Procedure", weight: 0.10, topics: [{n: "Radio Communications (SCC & Local Tac)", m: 2, r:true}, {n: "Radio Communications (Area Tac)", m: 2, r:true}, {n: "External Radio Communications (Departmental)", m: 2, r:true}] },
+        { name: "Internal Relations", weight: 0.10, topics: [{n: "Disciplinary Actions", m: 1, r:false}, {n: "Report Proof Reading And Reviewing", m: 1, r:true}, {n: "Internal / Employee Misconduct", m: 2, r:true}, {n: "Liaising with Investigative Bureaus", m: 2, r:true}, {n: "On-duty & Off-duty Conduct", m: 1, r:false}, {n: "Managing of the handle", m: 3, r:false}] },
+        { name: "Management", weight: 0.10, topics: [{n: "Arrest Supervision", m: 2, r:true}, {n: "Crime Scene Investigation", m: 3, r:true}, {n: "Containment & Perimeter Setup", m: 3, r:true}, {n: "Mobilization Phases", m: 2, r:true}] },
+        { name: "Critical Incidents", weight: 0.20, topics: [{n: "Vehicle Pursuits", m: 3, r:true}, {n: "Foot Pursuits", m: 2, r:true}, {n: "Deputy-Involved Traffic Collisions", m: 2, r:true}, {n: "Barricaded Suspects", m: 3, r:true}, {n: "Felony stops", m: 2, r:true}, {n: "Deputy-Involved Shootings", m: 3, r:true}, {n: "Active Shooter", m: 3, r:true}] },
+        { name: "Use of Force", weight: 0.15, topics: [{n: "Use Of Force Incident Preliminary Investigation", m: 2, r:true}, {n: "Deployment Of Less-lethal Force", m: 2, r:true}, {n: "Authorization of PIT maneuvers & tire deflation", m: 2, r:true}] },
+        { name: "Outside Agencies", weight: 0.05, topics: [{n: "Media Presence", m: 2, r:true}, {n: "Liaising with Outer Agencies", m: 2, r:true}] },
+        { name: "Criminal Law & Policies", weight: 0.10, topics: [{n: "Search & Arrest Warrants", m: 1, r:true}, {n: "Departmental Policies & Procedures", m: 2, r:false}, {n: "Criminal Law", m: 2, r:false}] },
+        { name: "Out of Character", weight: 0.05, topics: [{n: "Roleplay & Mindset", m: 2, r:true}, {n: "Affect On Roleplay", m: 2, r:true}, {n: "Character Development/portrayal", m: 2, r:true}, {n: "OOC Demeanor", m: 2, r:true}, {n: "OOC Management & Supervising", m: 2, r:true}] }
+    ];
+
+    const finalSchema = [
+        { name: "Basics", weight: 0.20, topics: [{n: "Supervisor Presence", m: 3}, {n: "Resource Management", m: 3}, {n: "Incident Management", m: 3}, {n: "Supervisor Requests", m: 2}, {n: "Assigning Units", m: 2}, {n: "Briefs and Debriefs", m: 1}, {n: "Understanding of the handle", m: 3}] },
+        { name: "Radio Procedure", weight: 0.10, topics: [{n: "Radio Communications (SCC & Local)", m: 2}, {n: "Radio Communications (Area Tac)", m: 2}, {n: "External Radio Communications", m: 2}] },
+        { name: "Internal Relations", weight: 0.10, topics: [{n: "Disciplinary Actions", m: 1}, {n: "Report Proofreading", m: 1}, {n: "Internal Misconduct", m: 2}, {n: "Liaising with Bureaus", m: 2}, {n: "On and Off Duty Conduct", m: 1}, {n: "Managing the Handle", m: 3}] },
+        { name: "Management", weight: 0.15, topics: [{n: "Arrest Supervision", m: 2}, {n: "Crime Scene Investigation", m: 3}, {n: "Containment and Perimeter Setup", m: 3}, {n: "Mobilization Phases", m: 2}] },
+        { name: "Critical Incidents", weight: 0.30, topics: [{n: "Vehicle Pursuits", m: 3}, {n: "Foot Pursuits", m: 2}, {n: "Deputy Collisions", m: 2}, {n: "Barricaded Suspects", m: 3}, {n: "Felony Stops", m: 2}, {n: "Deputy Involved Shootings", m: 3}, {n: "Active Shooter", m: 3}, {n: "Use of Force Preliminary", m: 2}, {n: "Less Lethal Deployment", m: 2}, {n: "PIT and Tire Deflation", m: 2}] },
+        { name: "Outside Agencies", weight: 0.05, topics: [{n: "Media Presence", m: 2}, {n: "Liaising with Outer Agencies", m: 2}] },
+        { name: "Criminal Law & Policies", weight: 0.10, topics: [{n: "Search and Arrest Warrants", m: 1}, {n: "Policies and Procedures", m: 2}, {n: "Criminal Law", m: 2}] }
+    ];
+
+    const ooc_topics = ["Roleplay & Mindset", "Affect On Roleplay", "Character Development", "OOC Demeanor", "OOC Management"];
+
+    // --- INIT APP ---
+    window.onload = function() {
+        // Build Evaluation UI
+        const evAnchor = document.getElementById('eval-categories-anchor');
+        evalSchema.forEach((cat, cIdx) => {
+            let html = `<div class="card"><h3>${cat.name}</h3><div class="topic-row topic-header"><span>Topic</span><span>Base</span><span>Mod</span><span>N/O</span></div>`;
+            cat.topics.forEach((topic, tIdx) => {
+                let baseOpts = ""; for(let i=0; i<=topic.m; i++) baseOpts += `<option value="${i}">${i}</option>`;
+                html += `<div class="topic-row"><span class="topic-label">${topic.n}${topic.r ? '<span class="mandatory">*</span>' : ''}</span><select class="ev-base" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateEval()">${baseOpts}</select><select class="ev-mod" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateEval()"><option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option></select><input type="checkbox" class="ev-no-obs" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateEval()"></div>`;
+            });
+            html += `<div class="input-group" style="margin-top:10px;"><label>Comments</label><textarea class="ev-comment" data-cat="${cIdx}"></textarea></div></div>`;
+            evAnchor.innerHTML += html;
+        });
+
+        // Build Final UI
+        const finalAnchor = document.getElementById('final-categories-anchor');
+        finalSchema.forEach((cat, cIdx) => {
+            let html = `<div class="card"><h3>${cat.name} <span>Weight: ${cat.weight * 100}%</span></h3><div class="topic-row topic-header"><span>Topic</span><span>Base</span><span>Mod</span><span>N/O</span></div>`;
+            cat.topics.forEach((topic, tIdx) => {
+                let baseOpts = ""; for(let i=0; i<=topic.m; i++) baseOpts += `<option value="${i}">${i}</option>`;
+                html += `<div class="topic-row"><span class="topic-label">${topic.n} <span class="max-tag">(${topic.m})</span></span><select class="fn-base" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateFinal()">${baseOpts}</select><select class="fn-mod" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateFinal()"><option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option></select><input type="checkbox" class="fn-no-obs" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateFinal()"></div>`;
+            });
+            html += `<div class="input-group" style="margin-top:15px;"><label>${cat.name} Comments</label><textarea class="fn-comment" data-cat="${cIdx}"></textarea></div></div>`;
+            finalAnchor.innerHTML += html;
+        });
+
+        ooc_topics.forEach(topic => {
+            document.getElementById('ooc-rows').innerHTML += `<div class="topic-row"><label>${topic}</label><select class="ooc-score" onchange="calculateFinal()"><option value="0">Needs Improvement</option><option value="1" selected>Competent</option><option value="2">Superior</option></select><span></span><span></span></div>`;
+        });
+        
+        calculateEval();
+        calculateFinal();
+    };
+
+    // --- GENERATORS ---
+
+    function generateObsBBCode() {
+        const student = document.getElementById('obs_student').value || "NAME";
+        const mentor = document.getElementById('obs_mentor').value || "NAME";
+        const date = document.getElementById('obs_date').value || "DATE";
+        const grade = document.getElementById('obs_grade').value;
+        const narrative = document.getElementById('obs_narrative').value || "Narrative here";
+
+        let bb = `[block=20,20,white,white][center][img]https://i.imgur.com/LEWTXbL.png[/img]\n\n[size=85][b]STUDENT OBSERVATION REPORT[/b]\nLOS SANTOS COUNTY SHERIFF'S DEPARTMENT — BASIC SERGEANT SUPERVISORY SCHOOL[/size]\n[hr][/hr][/center]\n\n[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][td][size=85][b]PERFORMANCE GRADE[/b][/size][/td][/tr]\n[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/td][td][size=85]${date}[/td][td][size=85]${grade}[/size][/td][/tr][/table]\n[hr][/hr]\n[b]NARRATIVE:[/b]\n\n${narrative}[/block]`;
+        document.getElementById('obs_output').value = bb;
+    }
+
+    function generateEduBBCode() {
+        const student = document.getElementById('edu_student_name').value || "NAME";
+        const mentor = document.getElementById('edu_mentor_name').value || "NAME";
+        const date = document.getElementById('edu_patrol_date').value || "DATE";
+        const na = document.getElementById('edu_narrative_a').value || "N/A";
+        const nb = document.getElementById('edu_narrative_b').value || "N/A";
+        const nc = document.getElementById('edu_narrative_c').value || "N/A";
+
+        let bb = `[block=20,20,white,white][center][img]https://i.imgur.com/LEWTXbL.png[/img]\n\n[size=85][b]SERGEANT MENTOR EDUCATION PATROL REPORT[/b]\nLOS SANTOS COUNTY SHERIFF'S DEPARTMENT — BASIC SERGEANT SUPERVISORY SCHOOL[/size]\n[hr][/hr][/center]\n\n[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][/tr][tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/td][td][size=85]${date}[/td][/tr][/table]\n[hr][/hr]\n[table=Arial][tr][td][size=85][b][center]SESSION OVERVIEW[/center][/b][/size][/td][/tr][/table][hr][/hr]\n\n[size=105][justify][b]INSTRUCTIONS:[/b] \n[indent=25][size=85]The "Delivered Practical and/or Theoretical Knowledge" section shall be used to convey what topics from the Student Checklist were covered.\n\nThe most & least satisfactory performance sections are used to convey the student's reception of education. In no form is this evaluation of the student. Sections B & C allow BSSS Management to evaluate whether the student is ready to be moved on to the Evaluation phase. Mentors shall not look at the Education Patrols as formal evaluation in any way, shape, or form. The Education phase aims to teach the student and give constructive feedback on the student's performance.[/indent][/justify][/size][hr][/hr]\n\n[table=Arial][tr][td][size=85][b][center]SESSION NOTES[/center][/b][/size][/td][/tr][/table]\n\n[justify][size=105][b]A. DELIVERED PRACTICAL AND/OR THEORETICAL KNOWLEDGE[/b]\n\n${na}[/size]\n[hr][/hr]\n[justify][size=105][b]B. MOST SATISFACTORY PERFORMANCE[/b]\n\n${nb}[/size]\n[hr][/hr]\n[justify][size=105][b]C. LEAST SATISFACTORY PERFORMANCE[/b]\n\n${nc}[/size]\n[/block]`;
+        document.getElementById('edu_bbcode_output').value = bb;
+    }
+
+    function calculateEval() {
+        let weightedSum = 0, totalObsWeight = 0;
+        evalSchema.forEach((cat, cIdx) => {
+            let catEarned = 0, catMax = 0, catObs = false;
+            cat.topics.forEach((topic, tIdx) => {
+                if (!document.querySelector(`.ev-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked) {
+                    catObs = true;
+                    let b = parseInt(document.querySelector(`.ev-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    let m = parseInt(document.querySelector(`.ev-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    catEarned += Math.max(0, Math.min(topic.m, b + m)); catMax += topic.m;
+                }
+            });
+            if (catObs && catMax > 0) { weightedSum += (catEarned / catMax) * cat.weight; totalObsWeight += cat.weight; }
+        });
+        let final = totalObsWeight > 0 ? (weightedSum / totalObsWeight) * 100 : 0;
+        document.getElementById('ev_final_score').innerText = final.toFixed(1) + "%";
+        const st = document.getElementById('ev_pass_status');
+        st.innerText = final >= 90 ? "SUPERIOR" : final >= 75 ? "COMPETENT" : "NEEDS IMPROVEMENT";
+        st.style.color = final >= 75 ? "#8bff8b" : "#ff8b8b";
+    }
+
+    function generateEvalBBCode() {
+        const student = document.getElementById('ev_student_name').value || "NAME";
+        const mentor = document.getElementById('ev_mentor_name').value || "NAME";
+        const date = document.getElementById('ev_patrol_date').value || "DATE";
+        const performance = document.getElementById('ev_pass_status').innerText;
+        const narrative = document.getElementById('ev_narrative').value || "Report here.";
+
+        let bb = `[block=20,20,white,white][center][img]https://i.imgur.com/LEWTXbL.png[/img]\n\n[size=85][b]SERGEANT MENTOR EVALUATION PATROL REPORT[/b]\nLOS SANTOS COUNTY SHERIFF'S DEPARTMENT — BASIC SERGEANT SUPERVISORY SCHOOL[/size]\n[hr][/hr][/center]\n\n[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][td][size=85][b]OVERALL PERFORMANCE[/b][/size][/td][/tr]\n[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/td][td][size=85]${date}[/td][td][size=85]${performance}[/size][/td][/tr][/table]\n[hr][/hr]\n[table=Arial][tr][td][size=85][b][center]SESSION OVERVIEW[/center][/b][/size][/td][/tr][/table][hr][/hr]\n\n[size=105][justify][b]INSTRUCTIONS:[/b] ... [Instructions Removed] ... [/justify][/size][hr][/hr]\n[table=Arial][tr][td][size=85][b]AREA[/b][/size][/td][td][size=85][b]GRADE[/b][/size][/td][td][size=85][b]COMMENTS[/b][/size][/td][/tr]`;
+
+        evalSchema.forEach((cat, cIdx) => {
+            let catEarned = 0, catMax = 0, items = "", obsCount = 0;
+            cat.topics.forEach((topic, tIdx) => {
+                const isNoObs = document.querySelector(`.ev-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked;
+                let topicName = (cat.name === "Out of Character") ? `[ooc]${topic.n}[/ooc]` : topic.n;
+                items += `[cb]${isNoObs ? "" : "x"}[/cb] ${topicName}${topic.r ? "[color=red]*[/color]" : ""}\n`;
+                if(!isNoObs) {
+                    let b = parseInt(document.querySelector(`.ev-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    let m = parseInt(document.querySelector(`.ev-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    catEarned += Math.max(0, Math.min(topic.m, b + m)); catMax += topic.m; obsCount++;
+                }
+            });
+            let g = "N/O"; if(obsCount > 0) { let p = (catEarned/catMax)*100; g = p >= 90 ? "S" : p >= 75 ? "C" : "N/I"; }
+            bb += `[tr][td][size=85][b]${cat.name}[/b]\n${items}[/size][/td][td][size=85]${g}[/td][td][size=85]${document.querySelectorAll('.ev-comment')[cIdx].value || "N/A"}[/td][/tr]`;
+        });
+        bb += `[/table]\n[hr][/hr]\n[table=Arial][tr][td][size=85][b][center]SESSION NOTES[/center][/b][/size][/td][/tr][/table][hr][/hr]\n\n[justify][size=105][b]REPORT & NARRATIVE[/b]\n\n${narrative}[/size][/block]`;
+        document.getElementById('ev_bbcode_output').value = bb;
+    }
+
+    function calculateFinal() {
+        let weightedSum = 0, totalObsWeight = 0;
+        finalSchema.forEach((cat, cIdx) => {
+            let catEarned = 0, catMax = 0, catObs = false;
+            cat.topics.forEach((topic, tIdx) => {
+                if (!document.querySelector(`.fn-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked) {
+                    catObs = true;
+                    let b = parseInt(document.querySelector(`.fn-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    let m = parseInt(document.querySelector(`.fn-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    catEarned += Math.max(0, Math.min(topic.m, b + m)); catMax += topic.m;
+                }
+            });
+            if (catObs && catMax > 0) { weightedSum += (catEarned / catMax) * cat.weight; totalObsWeight += cat.weight; }
+        });
+        let oocSum = 0; document.querySelectorAll('.ooc-score').forEach(s => oocSum += parseInt(s.value));
+        let oocBonus = (oocSum / (ooc_topics.length * 2)) * 5;
+        let base = totalObsWeight > 0 ? (weightedSum / totalObsWeight) * 100 : 0;
+        let final = Math.min(100, base + oocBonus);
+        document.getElementById('final_score').innerText = final.toFixed(1) + "%";
+        const st = document.getElementById('pass_status');
+        st.innerText = final >= 75 ? "COMPETENT / PASS" : "NEEDS IMPROVEMENT / FAIL";
+        st.style.color = final >= 75 ? "#8bff8b" : "#ff8b8b";
+    }
+
+    function generateFinalBBCode() {
+        const student = document.getElementById('student_name').value || "NAME";
+        const mentor = document.getElementById('mentor_name').value || "NAME";
+        const date = document.getElementById('patrol_date').value || "DATE";
+        const score = parseFloat(document.getElementById('final_score').innerText);
+        const pass = score >= 75;
+        const color = pass ? "#00FF00" : "#FF0000";
+
+        let bb = `[block=20,20,white,white][center][img]https://i.imgur.com/LEWTXbL.png[/img]\n\n[size=85][b]SERGEANT MENTOR FINAL EVALUATION PATROL REPORT[/b]\nLOS SANTOS COUNTY SHERIFF'S DEPARTMENT — BASIC SERGEANT SUPERVISORY SCHOOL[/size]\n[hr][/hr][/center]\n\n[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][td][size=85][b]FINAL SCORE[/b][/size][/td][td][size=85][b]STATUS[/b][/size][/td][/tr]\n[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/td][td][size=85]${date}[/td][td][size=85][b][color=${color}]${score.toFixed(1)}%[/color][/b][/td][td][size=85][color=${color}][b]${pass ? "COMPETENT / PASS" : "NEEDS IMPROVEMENT / FAIL"}[/b][/color][/size][/td][/tr][/table]\n[hr][/hr]... [Table Content] ...`;
+        
+        finalSchema.forEach((cat, cIdx) => {
+            let catEarned = 0, catMax = 0, items = "", obs = 0;
+            cat.topics.forEach((topic, tIdx) => {
+                const row = document.querySelector(`.fn-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
+                items += `${row.checked ? "[cb][/cb]" : "[cb]x[/cb]"} ${topic.n} [size=75](${topic.m})[/size]\n`;
+                if(!row.checked) {
+                    let b = parseInt(document.querySelector(`.fn-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    let m = parseInt(document.querySelector(`.fn-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    catEarned += Math.max(0, Math.min(topic.m, b + m)); catMax += topic.m; obs++;
+                }
+            });
+            let grade = "N/O"; if(obs > 0) { let p = (catEarned/catMax)*100; grade = `${p >= 90 ? "Superior" : p >= 70 ? "Competent" : "Needs Improvement"} (${p.toFixed(0)}%)`; }
+            bb += `\n[tr][td][size=85][b]${cat.name} (${(cat.weight*100).toFixed(0)}%)[/b]\n${items}[/size][/td][td][size=85]${grade}[/td][td][size=85]${document.querySelectorAll('.fn-comment')[cIdx].value || "N/A"}[/td][/tr]`;
+        });
+        
+        bb += `\n[tr][td][size=85][b]OOC MODIFIER[/b][/td][td][size=85]Bonus[/td][td][size=85]${document.getElementById('ooc_comment').value || "N/A"}[/td][/tr][/table]\n\n[justify][size=105][b]REPORT & NARRATIVE[/b]\n\n${document.getElementById('narrative').value}[/size][/block]`;
+        document.getElementById('bbcode_output').value = bb;
+    }
+
+    // --- UTILS ---
+    function openTab(evt, tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+    function toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
+    function copyText(id) { const c = document.getElementById(id); c.select(); document.execCommand("copy"); alert("Copied!"); }
+
+</script>
+</body>
+</html>
