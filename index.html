@@ -474,6 +474,7 @@ let currentFinalGrade = 0, currentOOCBonus = 0, currentBasePercent = 0;
 // BUILD FINAL EVAL ROWS
 // ══════════════════════════════════════════════════════════════════
 const anchor = document.getElementById('categories-anchor');
+let anchorHTML = '';
 finalSchema.forEach((cat, cIdx) => {
     let html = `<div class="card"><h3>${cat.name} <span>Weight: ${(cat.weight*100).toFixed(0)}%</span></h3>
     <div class="topic-row topic-header"><span>Topic</span><span>Base Score</span><span>N/O</span></div>`;
@@ -488,29 +489,33 @@ finalSchema.forEach((cat, cIdx) => {
     });
     html += `<div class="input-group" style="margin-top:13px;"><label>${cat.name} Comments</label>
         <textarea class="comment-box cat-comment" data-cat="${cIdx}"></textarea></div></div>`;
-    anchor.innerHTML += html;
+    anchorHTML += html;
 });
+anchor.innerHTML = anchorHTML;
 
 // ══════════════════════════════════════════════════════════════════
 // BUILD EDU TOPICS CHECKLIST
 // ══════════════════════════════════════════════════════════════════
 const eduGrid = document.getElementById('edu-topics-grid');
+let eduGridHTML = '';
 eduTopicSections.forEach((sec, sIdx) => {
     let topicItems = sec.topics.map((t, tIdx) =>
         `<label class="edu-topic-check">
             <input type="checkbox" class="edu-topic-cb" data-section="${sIdx}" data-topic="${tIdx}"> ${t}
         </label>`
     ).join('');
-    eduGrid.innerHTML += `<div class="edu-section">
+    eduGridHTML += `<div class="edu-section">
         <div class="edu-section-header">${sec.section}</div>
         <div class="edu-topics-grid">${topicItems}</div>
     </div>`;
 });
+eduGrid.innerHTML = eduGridHTML;
 
 // ══════════════════════════════════════════════════════════════════
 // BUILD EVAL PATROL AREAS
 // ══════════════════════════════════════════════════════════════════
 const epContainer = document.getElementById('eval-patrol-areas');
+let epHTML = '';
 evalPatrolAreas.forEach((area, aIdx) => {
     const areaName = area.ooc ? `[OOC] ${area.name}` : area.name;
     let topicsHtml = area.topics.map((t, tIdx) =>
@@ -519,7 +524,7 @@ evalPatrolAreas.forEach((area, aIdx) => {
             ${t.n}${t.m ? '<span class="mandatory-star">*</span>' : ''}
         </label>`
     ).join('');
-    epContainer.innerHTML += `
+    epHTML += `
     <div class="card eval-area-row" id="ep-area-${aIdx}">
         <div class="eval-area-header">
             <span class="eval-area-name">${areaName}</span>
@@ -537,6 +542,7 @@ evalPatrolAreas.forEach((area, aIdx) => {
         </div>
     </div>`;
 });
+epContainer.innerHTML = epHTML;
 
 // ══════════════════════════════════════════════════════════════════
 // AUTO-FILL DATES
@@ -892,6 +898,4 @@ function handleReset() {
         document.getElementById('edu_bbcode_output').value   = "";
         document.querySelectorAll('.edu-topic-cb').forEach(cb => cb.checked = false);
     } else if (activeTab === 'eval_patrol') {
-        document.getElementById('ep_student').value                  = "";
-        document.getElementById('ep_mentor').value                   = "";
-        document.ge... (3 KB left)
+        document.getElementById('ep_stud... (3 KB left)
