@@ -3,1089 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSSD - BSSS Supervisory Toolset</title>
+    <title>BSSS - Supervisory Toolset</title>
     <style>
         :root {
             --bg: #f0f0f0;
             --card-bg: #ffffff;
             --text: #1a1a1a;
-            --text-muted: #666;
             --lssd-gold: #c5a059;
-            --lssd-gold-light: #d4b47a;
             --lssd-green: #2d5a27;
-            --lssd-green-dark: #1e3d1a;
+            --lssd-green-light: #3d7a35;
             --border: #dddddd;
-            --input-bg: #f8f8f8;
+            --row-warn: #fff3cd;
+            --row-fail: #fde8e8;
+            --row-ok: #eafaea;
             --sticky-top: 20px;
-            --row-zero: rgba(220, 50, 50, 0.10);
-            --row-zero-border: rgba(220, 50, 50, 0.35);
-            --row-low: rgba(220, 150, 20, 0.10);
-            --row-low-border: rgba(220, 150, 20, 0.35);
-            --row-no-text: #888;
-            --bar-bg: rgba(0,0,0,0.08);
-            --output-bg: #1a1a2e;
-            --output-text: #4ade80;
         }
-
         [data-theme="dark"] {
-            --bg: #111318;
-            --card-bg: #1c1f26;
-            --text: #e2e4ea;
-            --text-muted: #8a8f9e;
-            --lssd-green: #3d7a35;
-            --lssd-green-dark: #2a5524;
-            --border: #2d3140;
-            --input-bg: #141720;
-            --row-zero: rgba(220, 60, 60, 0.15);
-            --row-zero-border: rgba(220, 60, 60, 0.4);
-            --row-low: rgba(220, 160, 30, 0.12);
-            --row-low-border: rgba(220, 160, 30, 0.38);
-            --row-no-text: #555;
-            --bar-bg: rgba(255,255,255,0.06);
-            --output-bg: #0d1117;
-            --output-text: #3ddc84;
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --border: #333333;
+            --lssd-green: #2d5a27;
+            --lssd-green-light: #3d7a35;
+            --row-warn: #3a3000;
+            --row-fail: #3a0f0f;
+            --row-ok: #0f2e0f;
         }
 
         * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            transition: background 0.25s, color 0.25s;
-            line-height: 1.45;
-        }
-
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; line-height: 1.4; }
         .container { max-width: 1400px; margin: auto; }
 
-        /* HEADER */
-        header {
-            text-align: center;
-            border-bottom: 3px solid var(--lssd-gold);
-            margin-bottom: 10px;
-            padding-bottom: 12px;
-            position: relative;
-        }
-        header h1 { margin: 5px 0 2px; font-size: 1.3em; letter-spacing: 0.05em; }
-        header p { margin: 0; font-size: 0.78em; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+        header { text-align: center; border-bottom: 3px solid var(--lssd-gold); margin-bottom: 10px; padding-bottom: 10px; position: relative; }
+        header h1 { margin: 5px 0; font-size: 1.4em; }
+        .header-actions { position: absolute; right: 0; top: 10px; display: flex; gap: 8px; align-items: center; }
+        .btn-sm { cursor: pointer; background: var(--lssd-green); color: white; border: none; padding: 7px 13px; border-radius: 20px; font-size: 0.78em; font-weight: bold; transition: 0.2s; white-space: nowrap; }
+        .btn-sm:hover { background: var(--lssd-green-light); }
+        .btn-sm.danger { background: #7a2020; }
+        .btn-sm.danger:hover { background: #a02828; }
 
-        .theme-switch {
-            position: absolute;
-            right: 0;
-            top: 10px;
-            cursor: pointer;
-            background: var(--lssd-green);
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.78em;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .theme-switch:hover { background: var(--lssd-green-dark); }
+        .warning { color: #cc7700; font-weight: bold; text-align: center; margin-bottom: 20px; text-transform: uppercase; font-size: 0.83em; background: #fff8e8; border: 1px solid #e8c96a; border-radius: 6px; padding: 8px 14px; }
+        [data-theme="dark"] .warning { background: #2a2000; border-color: #5a4500; color: #f0b040; }
 
-        .warning {
-            color: #e8574a;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 18px;
-            text-transform: uppercase;
-            font-size: 0.82em;
-            background: rgba(220,50,50,0.06);
-            border: 1px solid rgba(220,50,50,0.2);
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-
-        /* TABS */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border);
-            overflow-x: auto;
-        }
-        .tab-btn {
-            padding: 11px 18px;
-            border: none;
-            background: var(--card-bg);
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 7px 7px 0 0;
-            transition: background 0.15s, color 0.15s;
-            color: var(--text-muted);
-            white-space: nowrap;
-            font-size: 0.85em;
-            border: 1px solid var(--border);
-            border-bottom: none;
-        }
-        .tab-btn:hover { background: var(--lssd-green); color: white; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
+        .tab-btn { padding: 11px 18px; border: none; background: #ddd; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; transition: 0.2s; color: #444; font-size: 0.88em; }
+        [data-theme="dark"] .tab-btn { background: #2a2a2a; color: #aaa; }
         .tab-btn.active { background: var(--lssd-green); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* LAYOUT */
-        .grid { display: grid; grid-template-columns: 1fr 420px; gap: 28px; align-items: start; }
+        .grid { display: grid; grid-template-columns: 1fr 430px; gap: 30px; align-items: start; }
+        .card { border: 1px solid var(--border); padding: 20px; border-radius: 8px; background: var(--card-bg); margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .card h3 { margin-top: 0; color: var(--lssd-gold); border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; font-size: 1.05em; }
 
-        .card {
-            border: 1px solid var(--border);
-            padding: 18px 20px;
-            border-radius: 8px;
-            background: var(--card-bg);
-            margin-bottom: 18px;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-        }
-        .card h3 {
-            margin-top: 0;
-            color: var(--lssd-gold);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 9px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.05em;
-        }
-        .card h3 span { font-size: 0.8em; color: var(--text-muted); font-weight: normal; }
+        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .input-group label { font-size: 0.78em; font-weight: bold; margin-bottom: 5px; color: var(--lssd-gold); text-transform: uppercase; letter-spacing: 0.04em; }
+        input, select, textarea { padding: 9px 10px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; font-size: 0.9em; }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--lssd-gold); border-color: var(--lssd-gold); }
 
-        /* FORM ELEMENTS */
-        .input-group { margin-bottom: 14px; display: flex; flex-direction: column; }
-        .input-group label { font-size: 0.78em; font-weight: bold; margin-bottom: 4px; color: var(--lssd-gold); text-transform: uppercase; letter-spacing: 0.05em; }
-        input[type="text"], input[type="date"], select, textarea {
-            padding: 9px 11px;
-            background: var(--input-bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            font-family: inherit;
-            font-size: 0.9em;
-            transition: border-color 0.15s, background 0.25s;
-        }
-        input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--lssd-gold);
-        }
-
-        /* TOPIC ROWS */
-        .topic-row {
-            display: grid;
-            grid-template-columns: 2.5fr 80px 80px 50px;
-            gap: 10px;
-            align-items: center;
-            padding: 7px 8px;
-            border-bottom: 1px solid var(--border);
-            border-radius: 4px;
-            transition: background 0.15s, border-color 0.15s;
-        }
-        .topic-row:last-of-type { border-bottom: none; }
-        .topic-header { font-weight: bold; font-size: 0.72em; text-transform: uppercase; opacity: 0.6; padding: 4px 8px; }
+        /* Topic rows - base + N/O only */
+        .topic-row { display: grid; grid-template-columns: 1fr 100px 50px; gap: 10px; align-items: center; padding: 7px 8px; border-bottom: 1px solid var(--border); border-radius: 4px; transition: background 0.2s; }
+        .topic-row:hover { background: rgba(197,160,89,0.07); }
+        .topic-row.score-fail { background: var(--row-fail); }
+        .topic-row.score-warn { background: var(--row-warn); }
+        .topic-row.score-ok { background: var(--row-ok); }
+        .topic-row.no-obs-row { opacity: 0.45; }
+        .topic-header { font-weight: bold; font-size: 0.73em; text-transform: uppercase; opacity: 0.65; }
         .topic-label { font-size: 0.88em; font-weight: 500; }
-        .max-tag { font-size: 0.78em; color: var(--lssd-gold); font-weight: bold; margin-left: 4px; }
-        .mandatory { color: #e8574a; font-weight: bold; margin-left: 3px; }
+        .max-tag { font-size: 0.78em; color: var(--lssd-gold); font-weight: bold; }
 
-        /* COLOR CODING */
-        .row-zero {
-            background: var(--row-zero) !important;
-            border-left: 3px solid var(--row-zero-border) !important;
-            border-bottom-color: transparent !important;
-            margin-left: -3px;
-        }
-        .row-low {
-            background: var(--row-low) !important;
-            border-left: 3px solid var(--row-low-border) !important;
-            border-bottom-color: transparent !important;
-            margin-left: -3px;
-        }
-        .row-observed { opacity: 1; }
-        .row-no { opacity: 0.42; }
-
-        /* SIDEBAR */
         .sidebar-sticky { position: sticky; top: var(--sticky-top); display: flex; flex-direction: column; gap: 18px; }
 
-        .score-box {
-            background: var(--lssd-green);
-            color: white;
-            padding: 22px 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .score-label { font-size: 0.75em; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; margin-bottom: 4px; }
+        .score-box { background: var(--lssd-green); color: white; padding: 22px; border-radius: 8px; text-align: center; }
         .score-val { font-size: 3.2em; font-weight: bold; color: white; line-height: 1; }
-        .pass-status { font-weight: bold; margin-top: 10px; font-size: 1.05em; }
+        .score-label { font-size: 0.78em; margin-bottom: 6px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.05em; }
+        #pass_status { font-weight: bold; margin-top: 10px; font-size: 1.05em; }
 
-        /* CATEGORY BREAKDOWN BARS */
-        .breakdown-card { padding: 14px 16px; }
-        .breakdown-card h3 { font-size: 0.95em; margin-bottom: 10px; }
-        .cat-bar-row { margin-bottom: 9px; }
-        .cat-bar-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75em;
-            margin-bottom: 3px;
-            font-weight: 500;
-        }
-        .cat-bar-label span:first-child { color: var(--text); }
-        .cat-bar-label span:last-child { color: var(--lssd-gold); font-weight: bold; }
-        .cat-bar-track {
-            height: 7px;
-            background: var(--bar-bg);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .cat-bar-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.3s ease, background 0.3s ease;
-        }
+        .breakdown-list { list-style: none; padding: 0; margin: 0; }
+        .breakdown-item { margin-bottom: 10px; }
+        .breakdown-name { font-size: 0.76em; font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; margin-bottom: 3px; opacity: 0.85; }
+        .breakdown-bar-bg { background: var(--border); border-radius: 3px; height: 8px; overflow: hidden; }
+        .breakdown-bar-fill { height: 100%; border-radius: 3px; transition: width 0.35s ease; }
 
-        /* OUTPUT / BBCODE */
-        textarea.comment-box {
-            width: 100%;
-            min-height: 80px;
-            resize: vertical;
-            margin-top: 8px;
-            box-sizing: border-box;
-        }
-        .output-box {
-            width: 100%;
-            height: 380px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            white-space: pre;
-            overflow: auto;
-            margin-top: 10px;
-            background: var(--output-bg);
-            color: var(--output-text);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            padding: 10px;
-            resize: vertical;
-        }
+        textarea.comment-box { width: 100%; min-height: 80px; resize: vertical; margin-top: 8px; font-family: sans-serif; }
+        #bbcode_output { width: 100%; height: 380px; font-family: monospace; font-size: 10.5px; white-space: pre; overflow: auto; margin-top: 10px; background: #111; color: #0f0; border: 1px solid #444; border-radius: 4px; padding: 10px; }
 
-        /* BUTTONS */
-        .btn {
-            background: var(--lssd-gold);
-            color: #1a1a1a;
-            border: none;
-            padding: 11px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.15s, transform 0.1s;
-            font-size: 0.88em;
-            letter-spacing: 0.03em;
-        }
-        .btn:hover { background: var(--lssd-gold-light); }
-        .btn:active { transform: scale(0.99); }
-        .btn-copy {
-            background: #3a3f50;
-            color: white;
-            margin-top: 8px;
-        }
-        .btn-copy:hover { background: #4a5060; }
+        .btn { background: var(--lssd-gold); color: #1a1a1a; border: none; padding: 11px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; font-size: 0.92em; }
+        .btn:hover { filter: brightness(1.1); }
+        .btn-copy { background: #444; color: white; margin-top: 8px; }
+        .btn-print { background: #1a3a5c; color: white; margin-top: 8px; }
+        .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+        .btn-row .btn { margin-top: 0; }
 
         [type="checkbox"] { transform: scale(1.3); cursor: pointer; accent-color: var(--lssd-green); }
 
-        /* COPY TOAST */
-        .copy-toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--lssd-green);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.85em;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.2s, transform 0.2s;
-            pointer-events: none;
-            z-index: 999;
+        /* OOC Slider */
+        .ooc-slider-wrap { display: flex; align-items: center; gap: 14px; margin: 10px 0 6px; }
+        .ooc-slider-wrap input[type=range] { flex: 1; accent-color: var(--lssd-gold); height: 6px; cursor: pointer; padding: 0; }
+        .ooc-slider-val { font-size: 1.6em; font-weight: bold; color: var(--lssd-gold); min-width: 46px; text-align: right; }
+        .ooc-tick-labels { display: flex; justify-content: space-between; font-size: 0.72em; opacity: 0.6; padding: 0 2px; margin-bottom: 10px; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 30px; right: 30px; background: #2d5a27; color: white; padding: 12px 22px; border-radius: 8px; font-weight: bold; font-size: 0.9em; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #toast.show { opacity: 1; }
+
+        @media print {
+            .tabs, .header-actions, .sidebar-sticky .card, #bbcode_output, .btn, .btn-sm, .warning { display: none !important; }
+            .grid { grid-template-columns: 1fr; }
+            .sidebar-sticky { position: static; }
+            .score-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { padding: 0; }
         }
-        .copy-toast.show { opacity: 1; transform: translateY(0); }
 
-        /* RECOMMENDATION FIELD */
-        .recommendation-card { border: 2px solid var(--lssd-gold) !important; }
-        .recommendation-card h3 { color: var(--lssd-gold); }
+        .pending-placeholder { text-align: center; padding: 60px 20px; opacity: 0.5; font-style: italic; }
 
-        select.recommendation-select {
-            font-weight: bold;
-            font-size: 0.95em;
-        }
-        select.recommendation-select option[value="RECOMMENDED"] { color: #3ddc84; }
-        select.recommendation-select option[value="RE-EVALUATION"] { color: #f5a623; }
-        select.recommendation-select option[value="NOT_RECOMMENDED"] { color: #e8574a; }
-
-        /* OOC SECTION */
-        .ooc-card { border: 2px solid var(--lssd-green) !important; }
-        .ooc-card h3 span { color: var(--lssd-gold); }
-
-        /* RESPONSIVE */
         @media (max-width: 900px) {
             .grid { grid-template-columns: 1fr; }
             .sidebar-sticky { position: static; }
+            .header-actions { position: static; margin-top: 10px; justify-content: center; }
         }
     </style>
 </head>
 <body>
-
 <div class="container">
     <header>
-        <button class="theme-switch" onclick="toggleTheme()">🌙 Dark Mode</button>
-        <img src="https://i.imgur.com/LEWTXbL.png" width="72" alt="LSSD">
+        <div class="header-actions">
+            <button class="btn-sm danger" onclick="resetForm()">↺ Reset</button>
+            <button class="btn-sm" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+        <img src="https://i.imgur.com/LEWTXbL.png" width="70">
         <h1>BSSS SUPERVISORY TOOLSET</h1>
-        <p>Los Santos County Sheriff's Department — Basic Sergeant Supervisory School</p>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'obs')">Student Observation</button>
-        <button class="tab-btn" onclick="openTab(event, 'edu')">Educational Patrol</button>
-        <button class="tab-btn" onclick="openTab(event, 'eval')">Evaluation Patrol</button>
-        <button class="tab-btn" onclick="openTab(event, 'final')">Final Evaluation</button>
+        <button class="tab-btn" onclick="openTab(event,'obs')">Student Observation Report</button>
+        <button class="tab-btn" onclick="openTab(event,'edu')">Educational Patrol</button>
+        <button class="tab-btn" onclick="openTab(event,'eval')">Evaluation Patrol</button>
+        <button class="tab-btn active" onclick="openTab(event,'final')">Final Evaluation Format</button>
     </div>
 
-    <!-- ======================== TAB: OBSERVATION ======================== -->
-    <div id="obs" class="tab-content active">
-        <div class="grid">
-            <div class="main-content">
-                <div class="card">
-                    <h3>Personnel & Grade</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="input-group"><label>Student Name</label><input type="text" id="obs_student"></div>
-                        <div class="input-group"><label>Mentor Name</label><input type="text" id="obs_mentor"></div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="input-group"><label>Patrol Date</label><input type="date" id="obs_date"></div>
-                        <div class="input-group"><label>Performance Grade</label>
-                            <select id="obs_grade">
-                                <option value="POSITIVE">POSITIVE</option>
-                                <option value="NEGATIVE">NEGATIVE</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h3>Narrative</h3>
-                    <textarea id="obs_narrative" class="comment-box" style="height: 300px;" placeholder="Describe the observations here..."></textarea>
-                </div>
-            </div>
-            <div class="sidebar-sticky">
-                <div class="card">
-                    <h3>Observation BBCode</h3>
-                    <button class="btn" onclick="generateObsBBCode()">Generate BBCode</button>
-                    <textarea id="obs_output" class="output-box" readonly placeholder="Output appears here..."></textarea>
-                    <button class="btn btn-copy" onclick="copyText('obs_output')">Copy BBCode</button>
-                </div>
-            </div>
-        </div>
+    <div id="obs" class="tab-content">
+        <div class="card"><div class="pending-placeholder">Student Observation Report — Layout Pending</div></div>
     </div>
-
-    <!-- ======================== TAB: EDUCATIONAL PATROL ======================== -->
     <div id="edu" class="tab-content">
-        <div class="grid">
-            <div class="main-content">
-                <div class="card">
-                    <h3>Personnel Information</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="input-group"><label>Student Name</label><input type="text" id="edu_student_name"></div>
-                        <div class="input-group"><label>Mentor Name</label><input type="text" id="edu_mentor_name"></div>
-                    </div>
-                    <div class="input-group"><label>Patrol Date</label><input type="date" id="edu_patrol_date"></div>
-                </div>
-                <div class="card"><h3>A. Delivered Practical and/or Theoretical Knowledge</h3><textarea id="edu_narrative_a" class="comment-box" style="height: 150px;" placeholder="Topics covered from the Student Checklist..."></textarea></div>
-                <div class="card"><h3>B. Most Satisfactory Performance</h3><textarea id="edu_narrative_b" class="comment-box" style="height: 150px;" placeholder="Student's strongest areas..."></textarea></div>
-                <div class="card"><h3>C. Least Satisfactory Performance</h3><textarea id="edu_narrative_c" class="comment-box" style="height: 150px;" placeholder="Areas needing improvement..."></textarea></div>
-            </div>
-            <div class="sidebar-sticky">
-                <div class="card">
-                    <h3>Educational BBCode</h3>
-                    <button class="btn" onclick="generateEduBBCode()">Generate Edu BBCode</button>
-                    <textarea id="edu_bbcode_output" class="output-box" readonly></textarea>
-                    <button class="btn btn-copy" onclick="copyText('edu_bbcode_output')">Copy BBCode</button>
-                </div>
-            </div>
-        </div>
+        <div class="card"><div class="pending-placeholder">Educational Patrol Format — Layout Pending</div></div>
     </div>
-
-    <!-- ======================== TAB: EVALUATION PATROL ======================== -->
     <div id="eval" class="tab-content">
-        <div class="warning">⚠ Red asterisk (*) indicates mandatory task completion. ⚠</div>
-        <div class="grid">
-            <div class="main-content">
-                <div class="card">
-                    <h3>Personnel Information</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="input-group"><label>Student Name</label><input type="text" id="ev_student_name" oninput="calculateEval()"></div>
-                        <div class="input-group"><label>Mentor Name</label><input type="text" id="ev_mentor_name" oninput="calculateEval()"></div>
-                    </div>
-                    <div class="input-group"><label>Patrol Date</label><input type="date" id="ev_patrol_date" onchange="calculateEval()"></div>
-                </div>
-                <div id="eval-categories-anchor"></div>
-                <div class="card recommendation-card">
-                    <h3>Mentor Recommendation</h3>
-                    <div class="input-group">
-                        <label>Recommendation</label>
-                        <select id="ev_recommendation" class="recommendation-select">
-                            <option value="RECOMMENDED">✅ Recommended for Progression</option>
-                            <option value="RE-EVALUATION" selected>🔄 Recommended for Re-Evaluation</option>
-                            <option value="NOT_RECOMMENDED">❌ Not Recommended</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Recommendation Notes</label>
-                        <textarea id="ev_recommendation_notes" class="comment-box" placeholder="Briefly justify your recommendation..."></textarea>
-                    </div>
-                </div>
-                <div class="card"><h3>Report &amp; Narrative</h3><textarea id="ev_narrative" style="width:100%; height: 200px;" placeholder="Detailed rundown of the patrol..."></textarea></div>
-            </div>
-            <div class="sidebar-sticky">
-                <div class="score-box">
-                    <div class="score-label">Current Performance</div>
-                    <div class="score-val" id="ev_final_score">0%</div>
-                    <div class="pass-status" id="ev_pass_status">NEEDS EVALUATION</div>
-                </div>
-                <div class="card breakdown-card">
-                    <h3>Category Breakdown</h3>
-                    <div id="ev_breakdown"></div>
-                </div>
-                <div class="card">
-                    <h3>Evaluation BBCode</h3>
-                    <button class="btn" onclick="generateEvalBBCode()">Generate Eval BBCode</button>
-                    <textarea id="ev_bbcode_output" class="output-box" readonly></textarea>
-                    <button class="btn btn-copy" onclick="copyText('ev_bbcode_output')">Copy BBCode</button>
-                </div>
-            </div>
-        </div>
+        <div class="card"><div class="pending-placeholder">Evaluation Patrol Format — Layout Pending</div></div>
     </div>
 
-    <!-- ======================== TAB: FINAL EVALUATION ======================== -->
-    <div id="final" class="tab-content">
-        <div class="warning">⚠ Check off N/O for unobserved topics to shift grading weight. ⚠</div>
+    <div id="final" class="tab-content active">
+        <div class="warning">⚠ Check N/O for any topic not observed so grading weight is redistributed correctly. ⚠</div>
+
         <div class="grid">
             <div class="main-content">
                 <div class="card">
                     <h3>Personnel &amp; Session</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="input-group"><label>Student Name</label><input type="text" id="student_name" oninput="calculateFinal()"></div>
-                        <div class="input-group"><label>Mentor Name</label><input type="text" id="mentor_name" oninput="calculateFinal()"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                        <div class="input-group"><label>Student Name</label><input type="text" id="student_name" oninput="calculate()"></div>
+                        <div class="input-group"><label>Mentor Name</label><input type="text" id="mentor_name" oninput="calculate()"></div>
                     </div>
-                    <div class="input-group"><label>Patrol Date</label><input type="date" id="patrol_date" onchange="calculateFinal()"></div>
+                    <div class="input-group" style="max-width:280px;"><label>Patrol Date</label><input type="date" id="patrol_date" onchange="calculate()"></div>
                 </div>
-                <div id="final-categories-anchor"></div>
-                <div class="card ooc-card">
+
+                <div id="categories-anchor"></div>
+
+                <div class="card" style="border:2px solid var(--lssd-green);">
                     <h3>OOC Modifier <span>+5% Bonus Potential</span></h3>
-                    <div id="ooc-rows"></div>
-                    <div class="input-group" style="margin-top:14px;">
+                    <div class="input-group" style="margin-bottom:4px;">
+                        <label>OOC Bonus (0% – 5%)</label>
+                        <div class="ooc-slider-wrap">
+                            <input type="range" id="ooc_slider" min="0" max="5" step="1" value="0" oninput="updateOOCSlider()">
+                            <span class="ooc-slider-val" id="ooc_slider_label">+0%</span>
+                        </div>
+                        <div class="ooc-tick-labels">
+                            <span>0%</span><span>1%</span><span>2%</span><span>3%</span><span>4%</span><span>5%</span>
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top:4px;">
                         <label>OOC Performance Comments</label>
-                        <textarea id="ooc_comment" class="comment-box" placeholder="Explain the OOC bonus..."></textarea>
+                        <textarea id="ooc_comment" class="comment-box" placeholder="Explain the OOC bonus here..."></textarea>
                     </div>
                 </div>
-                <div class="card recommendation-card">
-                    <h3>Mentor Recommendation</h3>
-                    <div class="input-group">
-                        <label>Recommendation</label>
-                        <select id="fn_recommendation" class="recommendation-select">
-                            <option value="RECOMMENDED">✅ Recommended for Promotion</option>
-                            <option value="RE-EVALUATION" selected>🔄 Recommended for Re-Evaluation</option>
-                            <option value="NOT_RECOMMENDED">❌ Not Recommended for Promotion</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Recommendation Notes</label>
-                        <textarea id="fn_recommendation_notes" class="comment-box" placeholder="Briefly justify your recommendation..."></textarea>
-                    </div>
+
+                <div class="card">
+                    <h3>Overall Narrative</h3>
+                    <textarea id="narrative" style="width:100%;height:190px;resize:vertical;" placeholder="Provide a detailed rundown of the patrol..."></textarea>
                 </div>
-                <div class="card"><h3>Overall Narrative</h3><textarea id="narrative" style="width:100%; height: 200px;" placeholder="Provide a detailed rundown of the patrol..."></textarea></div>
             </div>
+
             <div class="sidebar-sticky">
                 <div class="score-box">
                     <div class="score-label">Final Performance Score</div>
                     <div class="score-val" id="final_score">0%</div>
-                    <div class="pass-status" id="pass_status">NEEDS EVALUATION</div>
+                    <div id="pass_status">NEEDS EVALUATION</div>
+                    <div style="font-size:0.75em;margin-top:6px;opacity:0.8;" id="score_breakdown_summary"></div>
                 </div>
-                <div class="card breakdown-card">
+
+                <div class="card" style="margin-bottom:0;">
                     <h3>Category Breakdown</h3>
-                    <div id="fn_breakdown"></div>
+                    <ul class="breakdown-list" id="breakdown_list"></ul>
                 </div>
-                <div class="card" style="margin-bottom: 0;">
+
+                <div class="card" style="margin-bottom:0;">
                     <h3>BBCode Output</h3>
-                    <button class="btn" onclick="generateFinalBBCode()">Generate Final BBCode</button>
-                    <textarea id="bbcode_output" class="output-box" readonly></textarea>
-                    <button class="btn btn-copy" onclick="copyText('bbcode_output')">Copy BBCode</button>
+                    <button class="btn" onclick="generateBBCode()">Generate Final BBCode</button>
+                    <textarea id="bbcode_output" readonly placeholder="Click Generate..."></textarea>
+                    <div class="btn-row">
+                        <button class="btn btn-copy" onclick="copyBBCode()">Copy BBCode</button>
+                        <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Copy Toast -->
-<div class="copy-toast" id="copy-toast">✓ Copied to clipboard!</div>
+<div id="toast">✓ Done!</div>
 
 <script>
-    // =====================================================
-    // DATA SCHEMAS
-    // =====================================================
-
-    const evalSchema = [
-        { name: "Basics", weight: 0.15, topics: [
-            {n: "Supervisor Presence", m: 3, r:true}, {n: "Resource Management", m: 3, r:true},
-            {n: "Incident Management", m: 3, r:true}, {n: "Supervisor Requests", m: 2, r:true},
-            {n: "Assigning Units", m: 2, r:true}, {n: "Briefs and Debriefs", m: 1, r:true},
-            {n: "Understanding of the handle", m: 3, r:false}
-        ]},
-        { name: "Radio Procedure", weight: 0.10, topics: [
-            {n: "Radio Communications (SCC & Local Tac)", m: 2, r:true},
-            {n: "Radio Communications (Area Tac)", m: 2, r:true},
-            {n: "External Radio Communications (Departmental)", m: 2, r:true}
-        ]},
-        { name: "Internal Relations", weight: 0.10, topics: [
-            {n: "Disciplinary Actions", m: 1, r:false}, {n: "Report Proof Reading And Reviewing", m: 1, r:true},
-            {n: "Internal / Employee Misconduct", m: 2, r:true}, {n: "Liaising with Investigative Bureaus", m: 2, r:true},
-            {n: "On-duty & Off-duty Conduct", m: 1, r:false}, {n: "Managing of the handle", m: 3, r:false}
-        ]},
-        { name: "Management", weight: 0.10, topics: [
-            {n: "Arrest Supervision", m: 2, r:true}, {n: "Crime Scene Investigation", m: 3, r:true},
-            {n: "Containment & Perimeter Setup", m: 3, r:true}, {n: "Mobilization Phases", m: 2, r:true}
-        ]},
-        { name: "Critical Incidents", weight: 0.20, topics: [
-            {n: "Vehicle Pursuits", m: 3, r:true}, {n: "Foot Pursuits", m: 2, r:true},
-            {n: "Deputy-Involved Traffic Collisions", m: 2, r:true}, {n: "Barricaded Suspects", m: 3, r:true},
-            {n: "Felony stops", m: 2, r:true}, {n: "Deputy-Involved Shootings", m: 3, r:true},
-            {n: "Active Shooter", m: 3, r:true}
-        ]},
-        { name: "Use of Force", weight: 0.15, topics: [
-            {n: "Use Of Force Incident Preliminary Investigation", m: 2, r:true},
-            {n: "Deployment Of Less-lethal Force", m: 2, r:true},
-            {n: "Authorization of PIT maneuvers & tire deflation", m: 2, r:true}
-        ]},
-        { name: "Outside Agencies", weight: 0.05, topics: [
-            {n: "Media Presence", m: 2, r:true}, {n: "Liaising with Outer Agencies", m: 2, r:true}
-        ]},
-        { name: "Criminal Law & Policies", weight: 0.10, topics: [
-            {n: "Search & Arrest Warrants", m: 1, r:true},
-            {n: "Departmental Policies & Procedures", m: 2, r:false},
-            {n: "Criminal Law", m: 2, r:false}
-        ]},
-        { name: "Out of Character", weight: 0.05, topics: [
-            {n: "Roleplay & Mindset", m: 2, r:true}, {n: "Affect On Roleplay", m: 2, r:true},
-            {n: "Character Development/portrayal", m: 2, r:true}, {n: "OOC Demeanor", m: 2, r:true},
-            {n: "OOC Management & Supervising", m: 2, r:true}
-        ]}
-    ];
-
-    const finalSchema = [
+    const schema = [
         { name: "Basics", weight: 0.20, topics: [
-            {n: "Supervisor Presence", m: 3}, {n: "Resource Management", m: 3}, {n: "Incident Management", m: 3},
-            {n: "Supervisor Requests", m: 2}, {n: "Assigning Units", m: 2}, {n: "Briefs and Debriefs", m: 1},
-            {n: "Understanding of the handle", m: 3}
+            {n:"Supervisor Presence",m:3},{n:"Resource Management",m:3},{n:"Incident Management",m:3},
+            {n:"Supervisor Requests",m:2},{n:"Assigning Units",m:2},{n:"Briefs and Debriefs",m:1},
+            {n:"Understanding of the handle",m:3}
         ]},
         { name: "Radio Procedure", weight: 0.10, topics: [
-            {n: "Radio Communications (SCC & Local)", m: 2}, {n: "Radio Communications (Area Tac)", m: 2},
-            {n: "External Radio Communications", m: 2}
+            {n:"Radio Communications (SCC & Local)",m:2},{n:"Radio Communications (Area Tac)",m:2},
+            {n:"External Radio Communications",m:2}
         ]},
         { name: "Internal Relations", weight: 0.10, topics: [
-            {n: "Disciplinary Actions", m: 1}, {n: "Report Proofreading", m: 1},
-            {n: "Internal Misconduct", m: 2}, {n: "Liaising with Bureaus", m: 2},
-            {n: "On and Off Duty Conduct", m: 1}, {n: "Managing the Handle", m: 3}
+            {n:"Disciplinary Actions",m:1},{n:"Report Proofreading",m:1},{n:"Internal Misconduct",m:2},
+            {n:"Liaising with Bureaus",m:2},{n:"On and Off Duty Conduct",m:1},{n:"Managing the Handle",m:3}
         ]},
         { name: "Management", weight: 0.15, topics: [
-            {n: "Arrest Supervision", m: 2}, {n: "Crime Scene Investigation", m: 3},
-            {n: "Containment and Perimeter Setup", m: 3}, {n: "Mobilization Phases", m: 2}
+            {n:"Arrest Supervision",m:2},{n:"Crime Scene Investigation",m:3},
+            {n:"Containment and Perimeter Setup",m:3},{n:"Mobilization Phases",m:2}
         ]},
         { name: "Critical Incidents", weight: 0.30, topics: [
-            {n: "Vehicle Pursuits", m: 3}, {n: "Foot Pursuits", m: 2}, {n: "Deputy Collisions", m: 2},
-            {n: "Barricaded Suspects", m: 3}, {n: "Felony Stops", m: 2}, {n: "Deputy Involved Shootings", m: 3},
-            {n: "Active Shooter", m: 3}, {n: "Use of Force Preliminary", m: 2},
-            {n: "Less Lethal Deployment", m: 2}, {n: "PIT and Tire Deflation", m: 2}
+            {n:"Vehicle Pursuits",m:3},{n:"Foot Pursuits",m:2},{n:"Deputy Collisions",m:2},
+            {n:"Barricaded Suspects",m:3},{n:"Felony Stops",m:2},{n:"Deputy Involved Shootings",m:3},
+            {n:"Active Shooter",m:3},{n:"Use of Force Preliminary",m:2},{n:"Less Lethal Deployment",m:2},
+            {n:"PIT and Tire Deflation",m:2}
         ]},
         { name: "Outside Agencies", weight: 0.05, topics: [
-            {n: "Media Presence", m: 2}, {n: "Liaising with Outer Agencies", m: 2}
+            {n:"Media Presence",m:2},{n:"Liaising with Outer Agencies",m:2}
         ]},
         { name: "Criminal Law & Policies", weight: 0.10, topics: [
-            {n: "Search and Arrest Warrants", m: 1}, {n: "Policies and Procedures", m: 2},
-            {n: "Criminal Law", m: 2}
+            {n:"Search and Arrest Warrants",m:1},{n:"Policies and Procedures",m:2},{n:"Criminal Law",m:2}
         ]}
     ];
 
-    const ooc_topics = ["Roleplay & Mindset", "Affect On Roleplay", "Character Development", "OOC Demeanor", "OOC Management"];
+    let currentFinalGrade = 0, currentOOCBonus = 0, currentBasePercent = 0;
 
-    // =====================================================
-    // INIT
-    // =====================================================
-
-    window.onload = function() {
-        // Set today's date on all date fields
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('obs_date').value = today;
-        document.getElementById('edu_patrol_date').value = today;
-        document.getElementById('ev_patrol_date').value = today;
-        document.getElementById('patrol_date').value = today;
-
-        buildEvalUI();
-        buildFinalUI();
-        calculateEval();
-        calculateFinal();
-    };
-
-    function buildEvalUI() {
-        const anchor = document.getElementById('eval-categories-anchor');
-        evalSchema.forEach((cat, cIdx) => {
-            let html = `<div class="card">
-                <h3>${cat.name} <span>Weight: ${(cat.weight*100).toFixed(0)}%</span></h3>
-                <div class="topic-row topic-header"><span>Topic</span><span>Base</span><span>Mod</span><span>N/O</span></div>`;
-            cat.topics.forEach((topic, tIdx) => {
-                let opts = "";
-                for (let i = 0; i <= topic.m; i++) opts += `<option value="${i}">${i}</option>`;
-                html += `<div class="topic-row" id="ev-row-${cIdx}-${tIdx}">
-                    <span class="topic-label">${topic.n}${topic.r ? '<span class="mandatory">*</span>' : ''}</span>
-                    <select class="ev-base" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateEval()">${opts}</select>
-                    <select class="ev-mod" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateEval()">
-                        <option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option>
-                    </select>
-                    <input type="checkbox" class="ev-no-obs" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateEval()">
-                </div>`;
-            });
-            html += `<div class="input-group" style="margin-top:12px;">
-                <label>Comments</label>
-                <textarea class="ev-comment comment-box" data-cat="${cIdx}"></textarea>
-            </div></div>`;
-            anchor.innerHTML += html;
-        });
-    }
-
-    function buildFinalUI() {
-        const anchor = document.getElementById('final-categories-anchor');
-        finalSchema.forEach((cat, cIdx) => {
-            let html = `<div class="card">
-                <h3>${cat.name} <span>Weight: ${(cat.weight*100).toFixed(0)}%</span></h3>
-                <div class="topic-row topic-header"><span>Topic</span><span>Base</span><span>Mod</span><span>N/O</span></div>`;
-            cat.topics.forEach((topic, tIdx) => {
-                let opts = "";
-                for (let i = 0; i <= topic.m; i++) opts += `<option value="${i}">${i}</option>`;
-                html += `<div class="topic-row" id="fn-row-${cIdx}-${tIdx}">
-                    <span class="topic-label">${topic.n} <span class="max-tag">(${topic.m})</span></span>
-                    <select class="fn-base" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateFinal()">${opts}</select>
-                    <select class="fn-mod" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateFinal()">
-                        <option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option>
-                    </select>
-                    <input type="checkbox" class="fn-no-obs" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculateFinal()">
-                </div>`;
-            });
-            html += `<div class="input-group" style="margin-top:12px;">
-                <label>${cat.name} Comments</label>
-                <textarea class="fn-comment comment-box" data-cat="${cIdx}"></textarea>
-            </div></div>`;
-            anchor.innerHTML += html;
-        });
-
-        ooc_topics.forEach(topic => {
-            document.getElementById('ooc-rows').innerHTML += `
-                <div class="topic-row">
-                    <label class="topic-label">${topic}</label>
-                    <select class="ooc-score" onchange="calculateFinal()">
-                        <option value="0">Needs Improvement</option>
-                        <option value="1" selected>Competent</option>
-                        <option value="2">Superior</option>
-                    </select>
-                    <span></span><span></span>
-                </div>`;
-        });
-    }
-
-    // =====================================================
-    // SCORE COLOR HELPERS
-    // =====================================================
-
-    function getBarColor(pct) {
-        if (pct === null) return '#555'; // N/O
-        if (pct >= 90) return '#3ddc84';
-        if (pct >= 75) return '#7bc67e';
-        if (pct >= 50) return '#f5a623';
-        return '#e8574a';
-    }
-
-    function colorTopicRow(rowEl, score, max, isNoObs) {
-        rowEl.classList.remove('row-zero', 'row-low', 'row-no', 'row-observed');
-        if (isNoObs) {
-            rowEl.classList.add('row-no');
-            return;
-        }
-        rowEl.classList.add('row-observed');
-        if (score === 0) {
-            rowEl.classList.add('row-zero');
-        } else {
-            const pct = score / max;
-            if (pct < 0.5) rowEl.classList.add('row-low');
-        }
-    }
-
-    // =====================================================
-    // CALCULATE: EVALUATION
-    // =====================================================
-
-    function calculateEval() {
-        let weightedSum = 0, totalObsWeight = 0;
-        const catData = [];
-
-        evalSchema.forEach((cat, cIdx) => {
-            let catEarned = 0, catMax = 0, catObs = false;
-
-            cat.topics.forEach((topic, tIdx) => {
-                const noObsEl = document.querySelector(`.ev-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
-                const baseEl = document.querySelector(`.ev-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
-                const modEl = document.querySelector(`.ev-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
-                const rowEl = document.getElementById(`ev-row-${cIdx}-${tIdx}`);
-                if (!noObsEl || !baseEl || !modEl) return;
-
-                const isNoObs = noObsEl.checked;
-                const base = parseInt(baseEl.value);
-                const mod = parseInt(modEl.value);
-                const score = Math.max(0, Math.min(topic.m, base + mod));
-
-                if (rowEl) colorTopicRow(rowEl, score, topic.m, isNoObs);
-
-                if (!isNoObs) {
-                    catObs = true;
-                    catEarned += score;
-                    catMax += topic.m;
-                }
-            });
-
-            const pct = (catObs && catMax > 0) ? (catEarned / catMax) * 100 : null;
-            catData.push({ name: cat.name, pct, weight: cat.weight });
-
-            if (catObs && catMax > 0) {
-                weightedSum += (catEarned / catMax) * cat.weight;
-                totalObsWeight += cat.weight;
-            }
-        });
-
-        const finalPct = totalObsWeight > 0 ? (weightedSum / totalObsWeight) * 100 : 0;
-
-        document.getElementById('ev_final_score').textContent = finalPct.toFixed(1) + "%";
-        const st = document.getElementById('ev_pass_status');
-        if (finalPct >= 90) { st.textContent = "SUPERIOR"; st.style.color = "#3ddc84"; }
-        else if (finalPct >= 75) { st.textContent = "COMPETENT"; st.style.color = "#7bc67e"; }
-        else { st.textContent = "NEEDS IMPROVEMENT"; st.style.color = "#ff8b8b"; }
-
-        renderBreakdown('ev_breakdown', catData);
-    }
-
-    // =====================================================
-    // CALCULATE: FINAL
-    // =====================================================
-
-    let fnCurrentBase = 0, fnCurrentOOC = 0, fnCurrentFinal = 0;
-
-    function calculateFinal() {
-        let weightedSum = 0, totalObsWeight = 0;
-        const catData = [];
-
-        finalSchema.forEach((cat, cIdx) => {
-            let catEarned = 0, catMax = 0, catObs = false;
-
-            cat.topics.forEach((topic, tIdx) => {
-                const noObsEl = document.querySelector(`.fn-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
-                const baseEl = document.querySelector(`.fn-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
-                const modEl = document.querySelector(`.fn-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
-                const rowEl = document.getElementById(`fn-row-${cIdx}-${tIdx}`);
-                if (!noObsEl || !baseEl || !modEl) return;
-
-                const isNoObs = noObsEl.checked;
-                const base = parseInt(baseEl.value);
-                const mod = parseInt(modEl.value);
-                const score = Math.max(0, Math.min(topic.m, base + mod));
-
-                if (rowEl) colorTopicRow(rowEl, score, topic.m, isNoObs);
-
-                if (!isNoObs) {
-                    catObs = true;
-                    catEarned += score;
-                    catMax += topic.m;
-                }
-            });
-
-            const pct = (catObs && catMax > 0) ? (catEarned / catMax) * 100 : null;
-            catData.push({ name: cat.name, pct, weight: cat.weight });
-
-            if (catObs && catMax > 0) {
-                weightedSum += (catEarned / catMax) * cat.weight;
-                totalObsWeight += cat.weight;
-            }
-        });
-
-        let oocSum = 0;
-        document.querySelectorAll('.ooc-score').forEach(s => oocSum += parseInt(s.value));
-        fnCurrentOOC = (oocSum / (ooc_topics.length * 2)) * 5;
-        fnCurrentBase = totalObsWeight > 0 ? (weightedSum / totalObsWeight) * 100 : 0;
-        fnCurrentFinal = Math.min(100, fnCurrentBase + fnCurrentOOC);
-
-        document.getElementById('final_score').textContent = fnCurrentFinal.toFixed(1) + "%";
-        const st = document.getElementById('pass_status');
-        if (fnCurrentFinal >= 75) { st.textContent = "COMPETENT / PASS"; st.style.color = "#8bff8b"; }
-        else { st.textContent = "NEEDS IMPROVEMENT / FAIL"; st.style.color = "#ff8b8b"; }
-
-        renderBreakdown('fn_breakdown', catData);
-    }
-
-    // =====================================================
-    // BREAKDOWN BARS
-    // =====================================================
-
-    function renderBreakdown(containerId, catData) {
-        const el = document.getElementById(containerId);
-        if (!el) return;
-        el.innerHTML = catData.map(c => {
-            const pctVal = c.pct !== null ? c.pct : null;
-            const fillW = pctVal !== null ? Math.max(2, pctVal) : 0;
-            const color = getBarColor(pctVal);
-            const label = pctVal !== null ? pctVal.toFixed(0) + "%" : "N/O";
-            return `<div class="cat-bar-row">
-                <div class="cat-bar-label">
-                    <span>${c.name}</span>
-                    <span style="color:${color}">${label}</span>
-                </div>
-                <div class="cat-bar-track">
-                    <div class="cat-bar-fill" style="width:${fillW}%; background:${color}"></div>
-                </div>
+    // Build category rows - base score + N/O only
+    const anchor = document.getElementById('categories-anchor');
+    schema.forEach((cat, cIdx) => {
+        let html = `<div class="card"><h3>${cat.name} <span>Weight: ${(cat.weight*100).toFixed(0)}%</span></h3>
+        <div class="topic-row topic-header"><span>Topic</span><span>Base Score</span><span>N/O</span></div>`;
+        cat.topics.forEach((topic, tIdx) => {
+            let opts = "";
+            for(let i = 0; i <= topic.m; i++) opts += `<option value="${i}">${i} / ${topic.m}</option>`;
+            html += `<div class="topic-row" id="row-${cIdx}-${tIdx}">
+                <span class="topic-label">${topic.n} <span class="max-tag">(max ${topic.m})</span></span>
+                <select class="base" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculate()">${opts}</select>
+                <input type="checkbox" class="no-obs" data-cat="${cIdx}" data-topic="${tIdx}" onchange="calculate()">
             </div>`;
-        }).join('');
+        });
+        html += `<div class="input-group" style="margin-top:13px;"><label>${cat.name} Comments</label>
+            <textarea class="comment-box cat-comment" data-cat="${cIdx}"></textarea></div></div>`;
+        anchor.innerHTML += html;
+    });
+
+    // Auto-fill today's date
+    document.getElementById('patrol_date').value = new Date().toISOString().split('T')[0];
+
+    function updateOOCSlider() {
+        const val = parseInt(document.getElementById('ooc_slider').value);
+        document.getElementById('ooc_slider_label').textContent = '+' + val + '%';
+        calculate();
     }
 
-    // =====================================================
-    // BBCODE GENERATORS
-    // =====================================================
+    function calculate() {
+        let weightedSum = 0, totalObservedWeight = 0;
+        const breakdownData = [];
 
-    const HEADER_IMG = "https://i.imgur.com/LEWTXbL.png";
-    const DEPT_LINE = "LOS SANTOS COUNTY SHERIFF'S DEPARTMENT — BASIC SERGEANT SUPERVISORY SCHOOL";
-
-    function generateObsBBCode() {
-        const student = document.getElementById('obs_student').value || "NAME";
-        const mentor = document.getElementById('obs_mentor').value || "NAME";
-        const date = document.getElementById('obs_date').value || "DATE";
-        const grade = document.getElementById('obs_grade').value;
-        const narrative = document.getElementById('obs_narrative').value || "Narrative here.";
-
-        const bb = `[block=20,20,white,white][center][img]${HEADER_IMG}[/img]
-
-[size=85][b]STUDENT OBSERVATION REPORT[/b]
-${DEPT_LINE}[/size]
-[hr][/hr][/center]
-
-[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][td][size=85][b]PERFORMANCE GRADE[/b][/size][/td][/tr]
-[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/size][/td][td][size=85]${date}[/size][/td][td][size=85]${grade}[/size][/td][/tr][/table]
-[hr][/hr]
-[justify][size=105][b]NARRATIVE:[/b]
-
-${narrative}[/size][/justify]
-[/block]`;
-        document.getElementById('obs_output').value = bb;
-    }
-
-    function generateEduBBCode() {
-        const student = document.getElementById('edu_student_name').value || "NAME";
-        const mentor = document.getElementById('edu_mentor_name').value || "NAME";
-        const date = document.getElementById('edu_patrol_date').value || "DATE";
-        const na = document.getElementById('edu_narrative_a').value || "N/A";
-        const nb = document.getElementById('edu_narrative_b').value || "N/A";
-        const nc = document.getElementById('edu_narrative_c').value || "N/A";
-
-        const bb = `[block=20,20,white,white][center][img]${HEADER_IMG}[/img]
-
-[size=85][b]SERGEANT MENTOR EDUCATION PATROL REPORT[/b]
-${DEPT_LINE}[/size]
-[hr][/hr][/center]
-
-[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][/tr]
-[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/size][/td][td][size=85]${date}[/size][/td][/tr][/table]
-[hr][/hr]
-[table=Arial][tr][td][size=85][b][center]SESSION OVERVIEW[/center][/b][/size][/td][/tr][/table][hr][/hr]
-
-[size=105][justify][b]INSTRUCTIONS:[/b]
-[indent=25][size=85]The "Delivered Practical and/or Theoretical Knowledge" section shall be used to convey what topics from the Student Checklist were covered.
-
-The most & least satisfactory performance sections are used to convey the student's reception of education. In no form is this evaluation of the student. Sections B & C allow BSSS Management to evaluate whether the student is ready to be moved on to the Evaluation phase. Mentors shall not look at the Education Patrols as formal evaluation in any way, shape, or form.[/size][/indent][/justify][/size]
-[hr][/hr]
-
-[table=Arial][tr][td][size=85][b][center]SESSION NOTES[/center][/b][/size][/td][/tr][/table]
-
-[justify][size=105][b]A. DELIVERED PRACTICAL AND/OR THEORETICAL KNOWLEDGE[/b]
-
-${na}[/size]
-[hr][/hr]
-[justify][size=105][b]B. MOST SATISFACTORY PERFORMANCE[/b]
-
-${nb}[/size]
-[hr][/hr]
-[justify][size=105][b]C. LEAST SATISFACTORY PERFORMANCE[/b]
-
-${nc}[/size]
-[/block]`;
-        document.getElementById('edu_bbcode_output').value = bb;
-    }
-
-    function generateEvalBBCode() {
-        const student = document.getElementById('ev_student_name').value || "NAME";
-        const mentor = document.getElementById('ev_mentor_name').value || "NAME";
-        const date = document.getElementById('ev_patrol_date').value || "DATE";
-        const narrative = document.getElementById('ev_narrative').value || "Report here.";
-        const performance = document.getElementById('ev_pass_status').textContent;
-        const recVal = document.getElementById('ev_recommendation').value;
-        const recNotes = document.getElementById('ev_recommendation_notes').value || "N/A";
-
-        const recLabels = {
-            "RECOMMENDED": "Recommended for Progression",
-            "RE-EVALUATION": "Recommended for Re-Evaluation",
-            "NOT_RECOMMENDED": "Not Recommended"
-        };
-        const recColors = {
-            "RECOMMENDED": "#00CC66",
-            "RE-EVALUATION": "#F5A623",
-            "NOT_RECOMMENDED": "#FF4444"
-        };
-        const recLabel = recLabels[recVal];
-        const recColor = recColors[recVal];
-
-        let bb = `[block=20,20,white,white][center][img]${HEADER_IMG}[/img]
-
-[size=85][b]SERGEANT MENTOR EVALUATION PATROL REPORT[/b]
-${DEPT_LINE}[/size]
-[hr][/hr][/center]
-
-[table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][td][size=85][b]OVERALL PERFORMANCE[/b][/size][/td][/tr]
-[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/size][/td][td][size=85]${date}[/size][/td][td][size=85]${performance}[/size][/td][/tr][/table]
-[hr][/hr]
-[table=Arial][tr][td][size=85][b][center]SESSION OVERVIEW[/center][/b][/size][/td][/tr][/table][hr][/hr]
-
-[table=Arial][tr][td][size=85][b]AREA[/b][/size][/td][td][size=85][b]GRADE[/b][/size][/td][td][size=85][b]COMMENTS[/b][/size][/td][/tr]`;
-
-        evalSchema.forEach((cat, cIdx) => {
-            let catEarned = 0, catMax = 0, items = "", obsCount = 0;
+        schema.forEach((cat, cIdx) => {
+            let catEarned = 0, catMax = 0, catObserved = false;
             cat.topics.forEach((topic, tIdx) => {
-                const isNoObs = document.querySelector(`.ev-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked;
-                const topicName = (cat.name === "Out of Character") ? `[ooc]${topic.n}[/ooc]` : topic.n;
-                items += `[cb]${isNoObs ? "" : "x"}[/cb] ${topicName}${topic.r ? "[color=red]*[/color]" : ""}\n`;
-                if (!isNoObs) {
-                    const b = parseInt(document.querySelector(`.ev-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
-                    const m = parseInt(document.querySelector(`.ev-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
-                    catEarned += Math.max(0, Math.min(topic.m, b + m));
-                    catMax += topic.m;
-                    obsCount++;
+                const noObs = document.querySelector(`.no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`);
+                const row   = document.getElementById(`row-${cIdx}-${tIdx}`);
+                row.classList.remove('score-fail','score-warn','score-ok','no-obs-row');
+
+                if (noObs.checked) {
+                    row.classList.add('no-obs-row');
+                } else {
+                    catObserved = true;
+                    let base   = parseInt(document.querySelector(`.base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    let earned = Math.max(0, Math.min(topic.m, base));
+                    catEarned += earned;
+                    catMax    += topic.m;
+                    if (topic.m > 0) {
+                        let pct = earned / topic.m;
+                        if (pct === 0)       row.classList.add('score-fail');
+                        else if (pct < 0.6)  row.classList.add('score-warn');
+                        else                 row.classList.add('score-ok');
+                    }
                 }
             });
-            let g = "N/O";
-            if (obsCount > 0) {
-                const p = (catEarned / catMax) * 100;
-                g = p >= 90 ? "S" : p >= 75 ? "C" : "N/I";
+
+            let catPct = (catObserved && catMax > 0) ? (catEarned / catMax) * 100 : null;
+            if (catObserved && catMax > 0) {
+                weightedSum         += (catEarned / catMax) * cat.weight;
+                totalObservedWeight += cat.weight;
             }
-            const comment = document.querySelectorAll('.ev-comment')[cIdx].value || "N/A";
-            bb += `[tr][td][size=85][b]${cat.name}[/b]\n${items}[/size][/td][td][size=85]${g}[/size][/td][td][size=85]${comment}[/size][/td][/tr]`;
+            breakdownData.push({ name: cat.name, pct: catPct });
         });
 
-        bb += `[/table]
-[hr][/hr]
-[table=Arial][tr][td][size=85][b][center]MENTOR RECOMMENDATION[/center][/b][/size][/td][/tr][/table][hr][/hr]
+        currentOOCBonus    = parseInt(document.getElementById('ooc_slider').value);
+        currentBasePercent = totalObservedWeight > 0 ? (weightedSum / totalObservedWeight) * 100 : 0;
+        currentFinalGrade  = Math.min(100, currentBasePercent + currentOOCBonus);
 
-[table=Arial][tr][td][size=85][b]RECOMMENDATION[/b][/size][/td][td][size=85][b]NOTES[/b][/size][/td][/tr]
-[tr][td][size=85][color=${recColor}][b]${recLabel}[/b][/color][/size][/td][td][size=85]${recNotes}[/size][/td][/tr][/table]
-[hr][/hr]
-[table=Arial][tr][td][size=85][b][center]SESSION NOTES[/center][/b][/size][/td][/tr][/table][hr][/hr]
+        document.getElementById('final_score').textContent = currentFinalGrade.toFixed(1) + "%";
+        document.getElementById('score_breakdown_summary').textContent =
+            `Base: ${currentBasePercent.toFixed(1)}%  +  OOC: +${currentOOCBonus}%`;
 
-[justify][size=105][b]REPORT & NARRATIVE[/b]
+        const statusEl = document.getElementById('pass_status');
+        if (currentFinalGrade >= 75) {
+            statusEl.textContent = "COMPETENT / PASS";
+            statusEl.style.color = "#8bff8b";
+        } else {
+            statusEl.textContent = "NEEDS IMPROVEMENT / FAIL";
+            statusEl.style.color = "#ff8b8b";
+        }
 
-${narrative}[/size][/justify]
-[/block]`;
-
-        document.getElementById('ev_bbcode_output').value = bb;
+        const list = document.getElementById('breakdown_list');
+        list.innerHTML = "";
+        breakdownData.forEach(item => {
+            const pct       = item.pct;
+            const display   = pct === null ? "N/O" : pct.toFixed(0) + "%";
+            const fillColor = pct === null ? "#555" : pct >= 75 ? "#3d9e35" : pct >= 50 ? "#c5a059" : "#c94040";
+            const fillWidth = pct === null ? 0 : pct;
+            list.innerHTML += `
+            <li class="breakdown-item">
+                <div class="breakdown-name"><span>${item.name}</span><span>${display}</span></div>
+                <div class="breakdown-bar-bg">
+                    <div class="breakdown-bar-fill" style="width:${fillWidth}%;background:${fillColor};"></div>
+                </div>
+            </li>`;
+        });
     }
 
-    function generateFinalBBCode() {
-        const student = document.getElementById('student_name').value || "NAME";
-        const mentor = document.getElementById('mentor_name').value || "NAME";
-        const date = document.getElementById('patrol_date').value || "DATE";
-        const pass = fnCurrentFinal >= 75;
-        const statusText = pass ? "COMPETENT / PASS" : "NEEDS IMPROVEMENT / FAIL";
+    function generateBBCode() {
+        const student     = document.getElementById('student_name').value || "NAME";
+        const mentor      = document.getElementById('mentor_name').value  || "NAME";
+        const date        = document.getElementById('patrol_date').value  || "DATE";
+        const pass        = currentFinalGrade >= 75;
+        const statusText  = pass ? "COMPETENT / PASS" : "NEEDS IMPROVEMENT / FAIL";
         const statusColor = pass ? "#00FF00" : "#FF0000";
-        const narrative = document.getElementById('narrative').value || "Report here.";
-        const oocComment = document.getElementById('ooc_comment').value || "N/A";
 
-        const recVal = document.getElementById('fn_recommendation').value;
-        const recNotes = document.getElementById('fn_recommendation_notes').value || "N/A";
-        const recLabels = {
-            "RECOMMENDED": "Recommended for Promotion",
-            "RE-EVALUATION": "Recommended for Re-Evaluation",
-            "NOT_RECOMMENDED": "Not Recommended for Promotion"
-        };
-        const recColors = {
-            "RECOMMENDED": "#00CC66",
-            "RE-EVALUATION": "#F5A623",
-            "NOT_RECOMMENDED": "#FF4444"
-        };
-        const recLabel = recLabels[recVal];
-        const recColor = recColors[recVal];
-
-        let bb = `[block=20,20,white,white][center][img]${HEADER_IMG}[/img]
-
+        let bb = `[block=20,20,white,white][center][img]https://i.imgur.com/LEWTXbL.png[/img]
 [size=85][b]SERGEANT MENTOR FINAL EVALUATION PATROL REPORT[/b]
-${DEPT_LINE}[/size]
+LOS SANTOS COUNTY SHERIFF'S DEPARTMENT — BASIC SERGEANT SUPERVISORY SCHOOL[/size]
 [hr][/hr][/center]
 
 [table=Arial][tr][td][size=85][b]STUDENT[/b][/size][/td][td][size=85][b]MENTOR[/b][/size][/td][td][size=85][b]DATE[/b][/size][/td][td][size=85][b]FINAL SCORE[/b][/size][/td][td][size=85][b]STATUS[/b][/size][/td][/tr]
-[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/size][/td][td][size=85]${date}[/size][/td][td][size=85][b][color=${statusColor}]${fnCurrentFinal.toFixed(1)}%[/color][/b][/size][/td][td][size=85][color=${statusColor}][b]${statusText}[/b][/color][/size][/td][/tr][/table]
+[tr][td][size=85]${student}[/size][/td][td][size=85]${mentor}[/td][td][size=85]${date}[/td][td][size=85][b][color=${statusColor}]${currentFinalGrade.toFixed(1)}%[/color][/b][/td][td][size=85][color=${statusColor}][b]${statusText}[/b][/color][/size][/td][/tr][/table]
 [hr][/hr]
 [table=Arial][tr][td][size=85][b][center]SESSION OVERVIEW[/center][/b][/size][/td][/tr][/table][hr][/hr]
-
 [table=Arial][tr][td][size=85][b]AREA[/b][/size][/td][td][size=85][b]GRADE (%)[/b][/size][/td][td][size=85][b]COMMENTS[/b][/size][/td][/tr]`;
 
-        finalSchema.forEach((cat, cIdx) => {
-            let catEarned = 0, catMax = 0, items = "", obs = 0;
+        schema.forEach((cat, cIdx) => {
+            let catEarned = 0, catMax = 0, listItems = "", obsCount = 0;
             cat.topics.forEach((topic, tIdx) => {
-                const isNoObs = document.querySelector(`.fn-no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked;
-                items += `${isNoObs ? "[cb][/cb]" : "[cb]x[/cb]"} ${topic.n} [size=75](${topic.m})[/size]\n`;
-                if (!isNoObs) {
-                    const b = parseInt(document.querySelector(`.fn-base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
-                    const m = parseInt(document.querySelector(`.fn-mod[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
-                    catEarned += Math.max(0, Math.min(topic.m, b + m));
-                    catMax += topic.m;
-                    obs++;
+                const isNo = document.querySelector(`.no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked;
+                listItems += `${isNo ? "[cb][/cb]" : "[cb]x[/cb]"} ${topic.n} [size=75](${topic.m})[/size]\n`;
+                if (!isNo) {
+                    let b = parseInt(document.querySelector(`.base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value);
+                    catEarned += Math.max(0, Math.min(topic.m, b));
+                    catMax    += topic.m;
+                    obsCount++;
                 }
             });
-            let grade = "N/O";
-            if (obs > 0) {
-                const p = (catEarned / catMax) * 100;
-                grade = `${p >= 90 ? "Superior" : p >= 70 ? "Competent" : "Needs Improvement"} (${p.toFixed(0)}%)`;
+            let gradeStr = "N/O";
+            if (obsCount > 0) {
+                let p    = (catEarned / catMax) * 100;
+                let desc = p >= 90 ? "Superior" : p >= 70 ? "Competent" : "Needs Improvement";
+                gradeStr = `${desc} (${p.toFixed(0)}%)`;
             }
-            const comment = document.querySelectorAll('.fn-comment')[cIdx].value || "N/A";
-            bb += `[tr][td][size=85][b]${cat.name} (${(cat.weight*100).toFixed(0)}%)[/b]\n${items}[/size][/td][td][size=85]${grade}[/size][/td][td][size=85]${comment}[/size][/td][/tr]`;
+            const comment = document.querySelectorAll('.cat-comment')[cIdx].value || "N/A";
+            bb += `\n[tr][td][size=85][b]${cat.name}[/b]\n${listItems}[/size][/td][td][size=85]${gradeStr}[/td][td][size=85]${comment}[/td][/tr]`;
         });
 
-        bb += `[tr][td][size=85][b]OOC MODIFIER[/b]
-(Character & Mindset)[/size][/td][td][size=85]Bonus: +${fnCurrentOOC.toFixed(1)}%[/size][/td][td][size=85]${oocComment}[/size][/td][/tr]
-[tr][td][size=85][b]SCORING BREAKDOWN[/b][/size][/td][td][size=85]Base: ${fnCurrentBase.toFixed(1)}%[/size][/td][td][size=85]Final Score includes OOC Bonus adjusted for Category Weighting.[/size][/td][/tr]
-[/table]
-[hr][/hr]
-[table=Arial][tr][td][size=85][b][center]MENTOR RECOMMENDATION[/center][/b][/size][/td][/tr][/table][hr][/hr]
-
-[table=Arial][tr][td][size=85][b]RECOMMENDATION[/b][/size][/td][td][size=85][b]NOTES[/b][/size][/td][/tr]
-[tr][td][size=85][color=${recColor}][b]${recLabel}[/b][/color][/size][/td][td][size=85]${recNotes}[/size][/td][/tr][/table]
-[hr][/hr]
-[table=Arial][tr][td][size=85][b][center]SESSION NOTES[/center][/b][/size][/td][/tr][/table][hr][/hr]
-
-[justify][size=105][b]REPORT & NARRATIVE[/b]
-
-${narrative}[/size][/justify]
-[/block]`;
+        bb += `\n[tr][td][size=85][b]OOC MODIFIER[/b][/size][/td][td][size=85]Bonus: +${currentOOCBonus}%[/size][/td][td][size=85]${document.getElementById('ooc_comment').value || "N/A"}[/td][/tr]`;
+        bb += `\n[tr][td][size=85][b]SCORING BREAKDOWN[/b][/size][/td][td][size=85]Base: ${currentBasePercent.toFixed(1)}%  |  OOC Bonus: +${currentOOCBonus}%  |  Final: ${currentFinalGrade.toFixed(1)}%[/size][/td][td][size=85]Final score includes OOC bonus adjusted for category weighting.[/size][/td][/tr]`;
+        bb += `\n[/table]\n[hr][/hr]\n[table=Arial][tr][td][size=85][b][center]SESSION NOTES[/center][/b][/size][/td][/tr][/table][hr][/hr]\n[justify][size=105][b]REPORT & NARRATIVE[/b]\n\n${document.getElementById('narrative').value}[/size][/justify]\n[/block]`;
 
         document.getElementById('bbcode_output').value = bb;
     }
 
-    // =====================================================
-    // UTILITIES
-    // =====================================================
+    function resetForm() {
+        if (!confirm("Reset the entire form? All data will be lost.")) return;
+        document.getElementById('student_name').value  = "";
+        document.getElementById('mentor_name').value   = "";
+        document.getElementById('patrol_date').value   = new Date().toISOString().split('T')[0];
+        document.getElementById('narrative').value     = "";
+        document.getElementById('ooc_comment').value   = "";
+        document.getElementById('bbcode_output').value = "";
+        document.getElementById('ooc_slider').value    = "0";
+        document.getElementById('ooc_slider_label').textContent = "+0%";
+        schema.forEach((cat, cIdx) => {
+            cat.topics.forEach((_, tIdx) => {
+                document.querySelector(`.base[data-cat="${cIdx}"][data-topic="${tIdx}"]`).value    = "0";
+                document.querySelector(`.no-obs[data-cat="${cIdx}"][data-topic="${tIdx}"]`).checked = false;
+            });
+            document.querySelectorAll('.cat-comment')[cIdx].value = "";
+        });
+        calculate();
+        showToast("↺ Form reset");
+    }
+
+    function copyBBCode() {
+        const el = document.getElementById('bbcode_output');
+        el.select();
+        document.execCommand('copy');
+        showToast("✓ BBCode copied!");
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        localStorage.setItem('bsss_theme', body.getAttribute('data-theme'));
+    }
 
     function openTab(evt, tabName) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1094,21 +452,10 @@ ${narrative}[/size][/justify]
         evt.currentTarget.classList.add('active');
     }
 
-    function toggleTheme() {
-        const body = document.body;
-        const isDark = body.getAttribute('data-theme') === 'dark';
-        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        document.querySelector('.theme-switch').textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
-    }
+    const savedTheme = localStorage.getItem('bsss_theme');
+    if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
 
-    function copyText(id) {
-        const el = document.getElementById(id);
-        el.select();
-        document.execCommand("copy");
-        const toast = document.getElementById('copy-toast');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2000);
-    }
+    calculate();
 </script>
 </body>
 </html>
